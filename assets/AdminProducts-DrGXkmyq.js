@@ -1,0 +1,1 @@
+import{_ as o,a as n,o as r,b as s}from"./index-C6L8uvNC.js";const t={},a={class:"container"};function d(c,e){return r(),n("div",a,[...e[0]||(e[0]=[s("div",{class:"admin-orders bg-white shadow-md rounded-lg p-6"},[s("h2",null,"管理商品")],-1)])])}const l=o(t,[["render",d]]);export{l as default};
