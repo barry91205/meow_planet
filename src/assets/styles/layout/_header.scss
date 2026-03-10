@@ -1,0 +1,40 @@
+.header {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header_logo {
+  width: 64px;
+}
+
+.header_nav-list {
+  gap: $gap-lg;
+}
+
+.header_nav-item {
+  font-size: 24px;
+}
+
+.header_nav-item a {
+  position: relative;
+}
+
+.header_nav-item a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.header_nav-item a:hover::after {
+  width: 100%;
+}
+
+.shopping-cart-icon:hover {
+  color: $primary;
+}

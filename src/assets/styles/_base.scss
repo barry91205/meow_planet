@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Aclonica&display=swap");
+@import "./variables.scss";
+// 可以放一些 Reset / 全域設定
+body {
+  font-family: "Aclonica", sans-serif;
+  background-color: $secondary;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: $primary;
+}
+
+h1 {
+  font-size: $font-xl;
+  line-height: 1.3;
+}
+
+p {
+  font-size: $gap-md;
+  line-height: 1.2 !important;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.primary-btn {
+  background: $primary;
+  color: #fff;
+  transition: background 0.2s;
+  border: none;
+}
+
+.primary-btn:hover {
+  background: darken($primary, 10%);
+}
+
+.secondary-btn {
+  background: $secondary;
+  color: #fff;
+  transition: background 0.2s;
+  border: none;
+}

@@ -1,0 +1,23 @@
+// 🎨 顏色變數
+$primary: #5b9ae2ff;
+$secondary: #dce5ff;
+
+// 🔤 字體大小
+$font-lg: 1.25rem;
+$font-xl: 1.5rem;
+
+// gap
+$gap-sm: 8px;
+$gap-md: 16px;
+$gap-lg: 32px;
+$gap-xl: 48px;
+
+// icons
+$icon-size: 24px;
+$icon-size-lg: 32px;
+
+// 把 Sass 變數輸出成 CSS 變數
+:root {
+  --color-primary: #{$primary};
+  --color-secondary: #{$secondary};
+}
