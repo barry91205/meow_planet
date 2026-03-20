@@ -1,1 +1,0 @@
-import{_ as s,a as n,o as r,b as o}from"./index-DGQnPadW.js";const t={},a={class:"container"};function d(c,e){return r(),n("div",a,[...e[0]||(e[0]=[o("div",{class:"admin-orders bg-white shadow-md rounded-lg p-6"},[o("h2",null,"管理優惠券")],-1)])])}const l=s(t,[["render",d]]);export{l as default};
