@@ -1,0 +1,1 @@
+import{_ as o,a as n,o as r,b as s}from"./index-fGeeOEJA.js";const t={},a={class:"container"};function c(d,e){return r(),n("div",a,[...e[0]||(e[0]=[s("div",{class:"admin-orders bg-white shadow-md rounded-lg p-6"},[s("h2",null,"管理文章")],-1)])])}const l=o(t,[["render",c]]);export{l as default};
