@@ -1,0 +1,1 @@
+import{_ as s}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{a as r,o as t,b as o}from"./index-B0cQbpDk.js";const n={},a={class:"container"};function d(c,e){return t(),r("div",a,[...e[0]||(e[0]=[o("div",{class:"admin-orders bg-white shadow-md rounded-lg p-6"},[o("h2",null,"管理商品")],-1)])])}const m=s(n,[["render",d]]);export{m as default};
