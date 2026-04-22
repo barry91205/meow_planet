@@ -77,9 +77,11 @@ import AdminPagination from "@/components/admin/AdminPagination.vue";
 const orders = ref([]);
 const pagination = ref({});
 
-const getOrders = async () => {
+const getOrders = async (page = 1) => {
   try {
-    const res = await axios.get(`${VITE_URL}/api/${VITE_PATH}/admin/orders`);
+    const res = await axios.get(
+      `${VITE_URL}/api/${VITE_PATH}/admin/orders?page=${page}`,
+    );
     orders.value = res.data.orders;
     console.log((orders.value = res.data.orders));
     pagination.value = res.data.pagination;

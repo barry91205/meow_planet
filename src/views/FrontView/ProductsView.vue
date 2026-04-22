@@ -1,7 +1,7 @@
 <template>
   <div class="container py-12 mx-auto">
-    <h1 class="title mb-10">房型介紹</h1>
-    <ul class="flex justify-center gap-6 mb-6 border-b-2 pb-4">
+    <h1 class="text-3xl font-bold mb-10">房型介紹</h1>
+    <ul class="flex justify-center mb-6 border-b-2 pb-4 gap-2 sm:gap-5 md:gap-6 lg:gap-8">
       <li>
         <router-link to="/products" class="room-link">全部房型</router-link>
       </li>
@@ -27,7 +27,7 @@
       >
         <img
           :src="product.imageUrl"
-          :alt="product.name"
+          :alt="product.title"
           class="w-full h-48 object-cover mb-4 rounded"
         />
         <h2 class="text-xl font-semibold mb-2">{{ product.title }}</h2>
@@ -42,9 +42,10 @@
           <button
             type="button"
             class="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition"
-            @click.prevent="addToCart(product.id, 1)"
+            :disabled="cartStore.loadingItem === product.id"
+            @click.prevent="cartStore.addToCart(product.id, 1)"
           >
-            加入購物車
+            {{ cartStore.loadingItem === product.id ? '加入中...' : '加入購物車' }}
           </button>
         </div>
       </div>
@@ -52,72 +53,32 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, watch } from "vue";
+<script setup lang="ts">
+import { ref,onMounted,computed } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
 import { useCartStore } from "@/stores/cartStore";
-import { useLoading } from "vue-loading-overlay";
-import Swal from "sweetalert2";
-const { VITE_URL, VITE_PATH } = import.meta.env;
+import { useProductStore } from "@/stores/productStore";
 
-// Pinia store
-import { storeToRefs } from "pinia";
-// const store = useYourStore();
+const productStore = useProductStore();
 const cartStore = useCartStore();
-// loading overlay
-// const loading = useLoading();
 
-const products = ref([]);
-const carts = ref([]);
 const categories = ref(["1貓房", "2貓房", "4貓房", "5貓房"]);
 const route = useRoute();
 
-const getProducts = async () => {
-  // const loader = loading.show();
-  const { category = "" } = route.query;
-  try {
-    const res = await axios.get(
-      `${VITE_URL}/v2/api/${VITE_PATH}/products?category=${category}`,
-    );
-    products.value = res.data.products;
-  } catch (err) {
-    Swal.fire("錯誤", "取得資料失敗", "error");
-  } finally {
-    // loader.hide();
+const products = computed(() => {
+  const category = route.query.category;
+  if (category) {
+    return productStore.products.filter(p => p.category === category);
   }
-};
-
-const addToCart = async (id, qty = 1) => {
-  try {
-    const res = await axios.post(`${VITE_URL}/v2/api/${VITE_PATH}/cart`, {
-      data: {
-        product_id: id,
-        qty,
-      },
-    });
-    await cartStore.addToCart(id, qty);
-    Swal.fire("成功", "已加入購物車", "success");
-  } catch (err) {
-    Swal.fire("錯誤", "加入購物車失敗", "error");
-  } finally {
-    // loader.hide();
-  }
-};
-
-onMounted(() => {
-  getProducts();
-  // getCarts();
-  cartStore.getCarts();
-  console.log("購物車內容：", carts.value);
+  return productStore.products;
 });
 
-watch(
-  () => route.query.category,
-  () => {
-    getProducts();
-  },
-);
+onMounted(() => {
+  productStore.getProducts();
+  cartStore.getCarts();
+  console.log("產品列表：", productStore.products);
+});
+
 </script>
 
 <style lang="scss">
@@ -145,7 +106,7 @@ watch(
     top: 0;
     width: 0;
     height: 100%;
-    background: darken($primary, 10%);
+    background: $secondary;
     z-index: 0;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -175,13 +136,16 @@ watch(
   text-align: center;
   font-weight: 500;
   background: #fff;
-
   &:hover,
   &.router-link-active {
     border-color: $primary;
     color: $primary;
     background: #f7fafc;
     text-decoration: none;
+  }
+  @media (max-width: 768px) {
+    padding: 0.25rem 1rem;
+    font-size: 0.875rem;
   }
 }
 </style>

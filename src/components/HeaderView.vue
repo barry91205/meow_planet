@@ -22,15 +22,29 @@
           <li><router-link to="/products">旅館</router-link></li>
           <li><router-link to="/articles">文章</router-link></li>
         </ul>
-        <button @click="openCart">
+        <button class="relative" @click="openCart">
+          <!-- 購物車品項數量 -->
           <span class="material-icons text-2xl">shopping_cart</span>
+          <span 
+        v-if="cartStore.cartQty > 0"
+        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs px-1.5 py-0.5"
+      >
+        {{ cartStore.cartQty }}
+      </span>
         </button>
       </nav>
 
       <!-- 手機版購物車 + 漢堡 -->
       <div class="flex items-center gap-4 md:hidden">
-        <button>
+        <button class="relative" @click="openCart">
+          <!-- 購物車品項數量 -->
           <span class="material-icons text-2xl">shopping_cart</span>
+          <span 
+        v-if="cartStore.cartQty > 0"
+        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs px-1.5 py-0.5"
+      >
+        {{ cartStore.cartQty }}
+      </span>
         </button>
         <button @click="isOpen = !isOpen">
           <span class="material-icons text-3xl">
@@ -48,7 +62,7 @@
           <router-link to="/products" @click="closeMenu">旅館</router-link>
         </li>
         <li>
-          <router-link to="/contact" @click="closeMenu">文章</router-link>
+          <router-link to="/articles" @click="closeMenu">文章</router-link>
         </li>
       </ul>
     </nav>
@@ -56,7 +70,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import CartSidebar from "@/components/CartSidebar.vue";
 import { useCartStore } from "@/stores/cartStore";
@@ -64,6 +78,7 @@ import { storeToRefs } from "pinia";
 
 const cartStore = useCartStore();
 const { carts } = storeToRefs(cartStore);
+
 
 const isOpen = ref(false);
 const closeMenu = () => (isOpen.value = false);

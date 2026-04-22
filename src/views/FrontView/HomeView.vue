@@ -222,11 +222,11 @@ onMounted(() => {
     z-index: 10;
   }
   .banner-swiper-btn:hover {
-    background: darken($primary, 10%);
+    background: $primary;
   }
   .banner-swiper-btn:disabled,
   .banner-swiper-btn.disabled {
-    background: lighten($primary, 30%);
+    background: $primary;
     color: #fff;
     opacity: 0.6;
     cursor: not-allowed;

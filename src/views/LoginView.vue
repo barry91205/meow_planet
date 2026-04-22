@@ -120,7 +120,7 @@ const handleLogin = async () => {
   transition: background 0.2s;
   font-weight: 600;
   &:hover {
-    background: darken($primary, 10%);
+    background: $secondary;
   }
 }
 .text-primary {

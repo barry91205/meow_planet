@@ -19,20 +19,51 @@
           <p class="text-gray-700 mb-6">{{ product.description }}</p>
           <ul class="mb-6">
             <li
-              v-for="(f, i) in product.facilities"
-              :key="i"
+              v-for="(facility, index) in facilities"
+              :key="index"
               class="flex items-center mb-2"
             >
               <span class="material-icons text-primary mr-2">check_circle</span>
-              {{ f }}
+              {{ facility }}
             </li>
           </ul>
         </div>
+        <!-- 加入商品數量至購物車 -->
+        <div class="flex items-center border rounded overflow-hidden mb-6">
+          <button
+            type="button"
+            @click="decreaseQty"
+            class="px-4 py-2 primary-btn transition disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="qty <= 1"
+          >
+            -
+          </button>
+
+          <input
+            type="number"
+            v-model.number="qty"
+            class="w-16 text-center py-2 outline-none appearance-none"
+            min="1"
+          />
+
+          <button
+            type="button"
+            @click="increaseQty"
+            class="px-4 py-2 primary-btn hover:bg-gray-200 text-gray-600 transition"
+          >
+            +
+          </button>
+        </div>
+        <!-- 加入購物車按鈕 -->
         <button
+          type="button"
           class="primary-btn w-full py-3 text-lg rounded"
-          @click.prevent="addToCart(product.id)"
+          :disabled="cartStore.isLoading"
+          @click.prevent.stop="cartStore.addToCart(product.id, qty)"
         >
-          預約這個房型
+          {{
+            cartStore.isLoading ? '加入中...' : '加入購物車'
+          }}
         </button>
       </div>
     </div>
@@ -40,62 +71,48 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
-import Swal from "sweetalert2";
-import { useCartStore } from "@/stores/cartstore";
-const { VITE_URL, VITE_PATH } = import.meta.env;
 
+import { useProductStore } from "@/stores/productStore";
+import { useCartStore } from "@/stores/cartStore";
+
+const productStore = useProductStore();
 const cartStore = useCartStore();
 
 const route = useRoute();
 
-const product = ref(null);
-
-const getProduct = async () => {
+const product = computed(() => {
   const id = route.params.id;
-  try {
-    const res = await axios.get(
-      `${VITE_URL}/v2/api/${VITE_PATH}/product/${id}`,
-    );
-    if (res.data.success) {
-      product.value = res.data.product;
-      // 假設設施資料在 product.value.facilities，若沒有可自行調整
-      if (!product.value.facilities) {
-        product.value.facilities = [
-          "免費Wi-Fi",
-          "冷氣",
-          "獨立衛浴",
-          "寵物友善",
-        ];
-      }
-    } else {
-      Swal.fire("錯誤", res.data.message, "error");
-    }
-  } catch (err) {
-    Swal.fire("錯誤", "取得資料失敗", "error");
-  }
+  return productStore.products.find((p) => p.id === id);
+});
+
+// 設備介紹渲染
+const facilities = computed<string[]>(() => {
+  // 使用可選串連 (?.) 會讓語法更簡潔
+  // 如果 product.value 存在，且有 facilities，就回傳它；否則回傳預設陣列
+  return product.value?.facilities?.length
+    ? product.value.facilities
+    : ["免費Wi-Fi", "冷氣", "獨立衛浴", "寵物友善", "24小時服務"];
+});
+
+// 新增：加入購物車數量功能
+const qty = ref<number>(1);
+// 寫兩個小函式來控制數量的加減 (防呆：不能小於 1)
+const increaseQty = (): void => {
+  qty.value++;
 };
 
-const addToCart = async (id, qty = 1) => {
-  try {
-    // delegate adding to cart to the store, which already handles the API call
-    await cartStore.addToCart(id, qty);
-
-    // optionally refresh cart data if needed
-    // await cartStore.getCarts();
-
-    Swal.fire("成功", "已加入購物車", "success");
-  } catch (err) {
-    // you can inspect err.response for more details in devtools
-    Swal.fire("錯誤", "加入購物車失敗", "error");
+const decreaseQty = (): void => {
+  if (qty.value > 1) {
+    qty.value--;
   }
 };
 
 onMounted(() => {
-  getProduct();
+  productStore.getProducts();
+  cartStore.getCarts();
 });
 </script>
 
@@ -111,7 +128,7 @@ onMounted(() => {
   transition: background 0.2s;
   font-weight: 600;
   &:hover {
-    background: darken($primary, 10%);
+    background: $secondary;
   }
 }
 </style>

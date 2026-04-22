@@ -1,15 +1,13 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import checker from 'vite-plugin-checker'
 import { fileURLToPath, URL } from "node:url";
 
 // https://vite.dev/config/
 export default defineConfig({
   base: "meow_planet/",
   plugins: [
-    vue(),
-    // eslintPlugin({
-    //   include: ["src/**/*.js", "src/**/*.vue", "src/*.js", "src/*.vue"],
-    // }),
+    [vue()]
   ],
   resolve: {
     alias: {
@@ -19,7 +17,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/assets/styles/variables.scss";`,
+        additionalData: `@use "@/assets/styles/variables.scss" as *;`,
       },
     },
   },

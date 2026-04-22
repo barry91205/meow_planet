@@ -30,7 +30,7 @@
         </template>
       </div>
     </div>
-    <div v-if="isLoading">Loading...</div>
+    <div v-if="cartStore.isLoading">Loading...</div>
     <!-- 購物車 -->
     <div v-if="carts.length > 0" class="bg-white shadow rounded-lg p-6">
       <div
@@ -48,16 +48,12 @@
             <h3 class="text-lg font-semibold">
               {{ item.product.title }}
             </h3>
-            <!-- <p class="text-sm text-gray-500">數量: {{ item.qty }}</p> -->
           </div>
           <!-- 調整數量 -->
           <div class="ml-4 flex items-center gap-2">
             <button
               @click="
-                cartStore.updateCart(
-                  formatPrice(item.id),
-                  formatPrice(item.qty - 1),
-                )
+                item.qty > 1 && cartStore.updateCart(item.id, item.qty - 1)
               "
               class="bg-gray-200 text-gray-700 px-2 rounded hover:bg-gray-300 transition"
             >
@@ -66,17 +62,13 @@
             <span>{{ item.qty }}</span>
             <button
               @click="
-                cartStore.updateCart(
-                  formatPrice(item.id),
-                  formatPrice(item.qty + 1),
-                )
+                item.qty > 1 && cartStore.updateCart(item.id, item.qty + 1)
               "
               class="bg-gray-200 text-gray-700 px-2 rounded hover:bg-gray-300 transition"
             >
               +
             </button>
           </div>
-          <!-- <p class="text-lg font-semibold">NT$ {{ item.final_total }}</p> -->
         </div>
 
         <div class="flex justify-between items-center mb-4">
@@ -87,7 +79,7 @@
           </span>
           <!-- 刪除按鈕 -->
           <button
-            @click="cartStore.removeCart(formatPrice(item.id))"
+            @click="cartStore.deleteCart(item.id)"
             class="text-red-500 hover:text-red-700 transition"
           >
             <span class="material-icons">delete</span>
@@ -110,6 +102,10 @@
           >
             使用優惠卷
           </button>
+          <!-- 顯示優惠卷已套用 -->
+          <p v-if="couponApplied" class="text-green-500">
+            優惠卷已套用
+          </p>
         </div>
         <!-- 折扣價格 -->
         <div class="border-t pt-4 text-right">
@@ -117,10 +113,6 @@
 
           <p v-if="discount > 0" class="text-red-500">
             優惠折扣：- ${{ formatPrice(discount) }}
-          </p>
-
-          <p class="text-xl font-bold">
-            應付金額：${{ formatPrice(cartStore.final_total) }}
           </p>
         </div>
       </div>
@@ -146,7 +138,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 import { useCartStore } from "@/stores/cartStore";
 import { useRouter } from "vue-router";
@@ -156,7 +148,6 @@ import Swal from "sweetalert2";
 import { formatPrice } from "@/utils/formatPrice";
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
-
 // store
 const cartStore = useCartStore();
 const router = useRouter();
@@ -164,20 +155,18 @@ const router = useRouter();
 // ===== cart =====
 const carts = computed(() => cartStore.carts);
 
-const total = computed(() =>
-  (cartStore.carts || []).reduce((sum, item) => sum + item.final_total, 0),
+const total = computed<number>(() =>
+  (cartStore.carts || []).reduce((sum: number, item: any) => sum + item.final_total, 0),
 );
 
-const discount = computed(() => {
+const discount = computed<number>(() => {
   return cartStore.total - cartStore.final_total;
 });
 
-const finalTotal = computed(() => cartStore.final_total);
-
 // ===== coupon =====
-const couponCode = ref("");
+const couponCode = ref<string>("");
 
-const useCoupon = async () => {
+const useCoupon = async (): Promise<void> => {
   try {
     await axios.post(`${VITE_URL}/v2/api/${VITE_PATH}/coupon`, {
       data: {
@@ -188,24 +177,28 @@ const useCoupon = async () => {
     await cartStore.getCarts();
 
     Swal.fire("成功", "優惠卷已使用", "success");
-  } catch (err) {
+  } catch (err: any) {
     Swal.fire("錯誤", "優惠卷無效", "error");
   }
-  const url = `${VITE_URL}/v2/api/${VITE_PATH}/coupon`;
 };
 
+// 顯示優惠卷已套用
+const couponApplied = computed<boolean>(() => {
+  return discount.value > 0;
+});
+
 // ===== router =====
-const goCheckout = () => {
+const goCheckout = (): void => {
   router.push("/checkout");
 };
 
 // ===== stepper =====
-const currentStep = ref(1);
+const currentStep = ref<number>(1);
 
 const steps = ["購物車", "填寫資訊", "確認訂單", "完成"];
 
 // 圓點
-const circleClass = (step) => {
+const circleClass = (step: number) => {
   if (step < currentStep.value)
     return "bg-green-500 text-white border-green-500";
 
@@ -216,26 +209,26 @@ const circleClass = (step) => {
 };
 
 // 文字
-const textClass = (step) => {
+const textClass = (step: number) => {
   if (step === currentStep.value) return "text-blue-500 font-medium";
   if (step < currentStep.value) return "text-green-500";
   return "text-gray-400";
 };
 
 // 線
-const lineClass = (step) => {
+const lineClass = (step: number) => {
   if (step < currentStep.value) return "bg-green-500";
   return "bg-gray-300";
 };
 
 // ===== checkout method =====
-const checkoutMethod = ref("credit_card");
-const selectCheckoutMethod = (method) => {
+const checkoutMethod = ref<string>("credit_card");
+const selectCheckoutMethod = (method: string) => {
   checkoutMethod.value = method;
 };
 
 // ===== 數量調整 =====
-const updateCart = (id, qty) => {
+const updateCart = (id: string, qty: number) => {
   if (qty < 1) return;
   cartStore.updateCart(id, qty);
 };

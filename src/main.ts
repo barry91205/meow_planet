@@ -1,19 +1,19 @@
 import { createApp } from "vue";
-import "./style.css";
+// import "./style.css";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 import "./assets/index.css";
-import "./assets/styles/main.scss"; // SCSS
+import "./assets/styles/main.scss"; 
 
 import "material-design-icons-iconfont/dist/material-design-icons.css";
 
 // 套件引入
-// sweetalert套件
+/* sweetalert套件 */
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
-// 引入 VeeValidate 元件跟功能
+/*引入 VeeValidate 元件跟功能 */
 import { Field, Form, ErrorMessage, defineRule, configure } from "vee-validate";
 // 引入 VeeValidate 的驗證規則
 // 引入 VeeValidate 的 i18n 功能
@@ -35,7 +35,7 @@ defineRule("required", required);
 defineRule("email", email);
 
 // 自訂 phone 規則
-defineRule("phone", (value) => {
+defineRule("phone", (value: string | undefined) => {
   if (!value) return "電話為必填";
 
   const regex = /^09\d{8}$/;

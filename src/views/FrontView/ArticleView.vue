@@ -25,22 +25,30 @@
 </template>
 \
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
-const { VITE_URL, VITE_PATH } = import.meta.env;
+const VITE_URL = import.meta.env.VITE_URL as string;
+const VITE_PATH = import.meta.env.VITE_PATH as string;
 
-const article = ref(null);
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string;
+}
+
+const article = ref<Article | null>(null);
 const route = useRoute();
 
 const fetchArticle = async () => {
   try {
-    const response = await axios.get(
+    const response = await axios.get<{ article: Article }>(
       `${VITE_URL}/api/${VITE_PATH}/article/${route.params.id}`,
     );
     article.value = response.data.article;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching article:", error);
   }
 };

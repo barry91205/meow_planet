@@ -4,11 +4,6 @@
   --color-secondary: #dce5ff;
 }
 
-:root {
-  --color-primary: #5b9ae2;
-  --color-secondary: #dce5ff;
-}
-
 body {
   font-family: "Aclonica", sans-serif;
   background-color: #dce5ff;

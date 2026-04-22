@@ -12,10 +12,6 @@ const currentStep = computed(() => {
     "/success": 4,
   };
 
-  const currentStep = computed(() => {
-    return stepMap[route.path] || 1;
-  });
-
   return map[route.path] ?? 1;
 });
 </script>

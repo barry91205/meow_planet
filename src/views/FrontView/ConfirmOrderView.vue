@@ -76,7 +76,7 @@
       <div class="flex justify-between items-center mb-4">
         <span class="font-bold">總計</span>
         <span class="text-primary font-bold text-lg">
-          NT$ {{ orderForm.total }}
+          NT$ {{ order.total }}
         </span>
       </div>
 
@@ -90,7 +90,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -99,11 +99,31 @@ import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cartStore";
 
 const { VITE_URL, VITE_PATH } = import.meta.env;
+
 const cartStore = useCartStore();
+const route = useRoute();
+const router = useRouter();
+
+interface Order {
+  id: string;
+  products: {
+    id: string;
+    product: {
+      title: string;
+      imageUrl: string;
+      price: number;
+    };
+    qty: number;
+    total: number;
+  }[];
+  total: number;
+}
 
 // 訂單產品資訊
-const order = ref({
+const order = ref<Order>({
+  id: "",
   products: [],
+  total: 0,
 });
 
 const orderForm = ref({
@@ -114,8 +134,7 @@ const orderForm = ref({
     payment: "",
   },
 });
-const router = useRouter();
-const route = useRoute();
+
 const orderId = ref(route.params.orderId);
 
 const getOrder = async () => {
@@ -159,7 +178,7 @@ onMounted(() => {
 const currentStep = ref(3);
 const steps = ["購物車", "填寫資訊", "確認訂單", "完成"];
 // 圓點
-const circleClass = (step) => {
+const circleClass = (step: number) => {
   if (step < currentStep.value)
     return "bg-green-500 text-white border-green-500";
 
@@ -170,14 +189,14 @@ const circleClass = (step) => {
 };
 
 // 文字
-const textClass = (step) => {
+const textClass = (step: number) => {
   if (step === currentStep.value) return "text-blue-500 font-medium";
   if (step < currentStep.value) return "text-green-500";
   return "text-gray-400";
 };
 
 // 線
-const lineClass = (step) => {
+const lineClass = (step: number) => {
   if (step < currentStep.value) return "bg-green-500";
   return "bg-gray-300";
 };

@@ -46,7 +46,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useCartStore } from "@/stores/cartStore";
@@ -56,10 +56,23 @@ const { VITE_URL, VITE_PATH } = import.meta.env;
 const cartStore = useCartStore();
 
 const route = useRoute();
-const orderId = ref(route.params.orderId);
-const router = useRouter();
-const order = ref(null);
+const order = ref<Order | null>(null);
 const isLoading = ref(false);
+
+interface Order {
+  id: string;
+  products: Array<{
+    id: string;
+    product: {
+      title: string;
+      price: number;
+      imageUrl: string;
+    };
+    qty: number;
+    total: number;
+  }>;
+  total: number;
+}
 
 const getOrder = async () => {
   isLoading.value = true;
@@ -67,9 +80,7 @@ const getOrder = async () => {
     const res = await axios.get(
       `${VITE_URL}/v2/api/${VITE_PATH}/order/${route.params.orderId}`,
     );
-    console.log("route", route.params.orderId);
-    console.log("api", res.data);
-    console.log("order", order.value);
+    console.log(route.params.orderId);
     order.value = res.data.order;
     isLoading.value = false;
   } catch (error) {
@@ -82,7 +93,7 @@ const currentStep = ref(4);
 const steps = ["購物車", "填寫資訊", "確認訂單", "完成"];
 
 // 圓點
-const circleClass = (step) => {
+const circleClass = (step: number) => {
   if (step < currentStep.value)
     return "bg-green-500 text-white border-green-500";
 
@@ -93,14 +104,14 @@ const circleClass = (step) => {
 };
 
 // 文字
-const textClass = (step) => {
+const textClass = (step: number) => {
   if (step === currentStep.value) return "text-blue-500 font-medium";
   if (step < currentStep.value) return "text-green-500";
   return "text-gray-400";
 };
 
 // 線
-const lineClass = (step) => {
+const lineClass = (step: number) => {
   if (step < currentStep.value) return "bg-green-500";
   return "bg-gray-300";
 };

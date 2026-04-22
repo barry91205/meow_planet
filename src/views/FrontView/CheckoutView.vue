@@ -12,8 +12,8 @@
               class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition"
               :class="circleClass(index + 1)"
             >
-              <span v-if="index + 1 < currentStep">✓</span>
-              <span v-else>{{ index + 1 }}</span>
+              <!-- <span v-if="index + 1 < currentStep">✓</span> -->
+              <span>{{ index + 1 }}</span>
             </div>
 
             <p class="mt-2 text-sm" :class="textClass(index + 1)">
@@ -44,6 +44,14 @@
           <div class="text-primary font-bold">NT$ {{ item.final_total }}</div>
         </li>
       </ul>
+      <div class="flex justify-between items-center mb-4">
+          <!-- 折扣金額 -->
+          <p class="text-red-500">優惠折扣：</p>
+          <p v-if="discount > 0" class="text-red-500">
+            - ${{ formatPrice(discount) }}
+          </p>
+      </div>
+      
       <div class="flex justify-between items-center mb-4">
         <span class="font-bold">總計</span>
         <span class="text-primary font-bold text-lg"> NT$ {{ total }} </span>
@@ -180,25 +188,21 @@
                 </button>
               </div>
             </div>
-            <!-- <p class="text-red-500">表單是否有效：{{ meta.valid }}</p> -->
             <button
               type="submit"
-              :disabled="isSubmitting"
+              :disabled="cartStore.isLoading"
               class="primary-btn w-full p-3 text-lg rounded disabled:opacity-50"
             >
               確認訂單
             </button>
           </v-form>
-          <!-- <p v-if="errors.payment" class="text-red-500 text-sm">
-            {{ errors.payment }}
-          </p> -->
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useCartStore } from "@/stores/cartStore";
 import { useRouter } from "vue-router";
@@ -206,17 +210,29 @@ import { Form as VForm, Field as VField, ErrorMessage } from "vee-validate";
 import axios from "axios";
 import Swal from "sweetalert2";
 
+import { formatPrice } from "@/utils/formatPrice";
+
 const { VITE_URL, VITE_PATH } = import.meta.env;
 
 const cartStore = useCartStore();
 const router = useRouter();
 
 const carts = computed(() => cartStore.carts);
-const total = computed(() =>
+const total = computed<number>(() =>
   (cartStore.carts || []).reduce((sum, item) => sum + item.final_total, 0),
 );
 
-const orderForm = ref({
+interface OrderForm {
+  user: {
+    name: string;
+    email: string;
+    tel: string;
+    address: string;
+  };
+  message: string;
+}
+
+const orderForm = ref<OrderForm>({
   user: {
     name: "",
     email: "",
@@ -225,67 +241,18 @@ const orderForm = ref({
   },
   message: "",
 });
-const errors = ref({});
-const formRef = ref(null);
+
+const formRef = ref<InstanceType<typeof VForm> | null>(null);
 const orderId = ref("");
-
-const emailRule = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRule = /^09\d{8}$/;
-
-// 結帳方式
 const checkoutMethod = ref("");
-
-// 及時驗證
-const validateField = (field) => {
-  touched[field] = true;
-
-  switch (field) {
-    case "email":
-      if (!orderForm.email) {
-        errors.email = "請輸入 Email";
-      } else if (!emailRule.test(orderForm.email)) {
-        errors.email = "Email 格式錯誤";
-      } else {
-        errors.email = ""; // ✅ 正確就清除
-      }
-      break;
-
-    case "phone":
-      if (!orderForm.phone) {
-        errors.phone = "請輸入電話";
-      } else if (!phoneRule.test(orderForm.phone)) {
-        errors.phone = "請輸入正確手機格式 (09xxxxxxxx)";
-      } else {
-        errors.phone = "";
-      }
-      break;
-
-    case "name":
-      errors.name = orderForm.name ? "" : "請輸入姓名";
-      break;
-
-    case "address":
-      errors.address = orderForm.address ? "" : "請輸入地址";
-      break;
-  }
-};
-
-// 送出前總驗證
-const validateAll = () => {
-  validateField("name");
-  validateField("phone");
-  validateField("email");
-  validateField("address");
-
-  errors.payment = checkoutMethod.value ? "" : "請選擇付款方式";
-
-  return !Object.values(errors).some((err) => err);
-};
-
-const isSubmitting = ref(false);
 
 // 提交訂單
 const createOrder = async () => {
+  // 檢查購物車是否有東西，避免送出空訂單
+  if (cartStore.carts.length === 0) {
+    Swal.fire({ icon: "warning", title: "購物車是空的喔！" });
+    return;
+  }
   const url = `${VITE_URL}/v2/api/${VITE_PATH}/order`;
   const order = {
     user: {
@@ -325,6 +292,12 @@ const createOrder = async () => {
   }
 };
 
+// 優惠卷折扣金額
+const discount = computed<number>(() => {
+  return cartStore.total - cartStore.final_total;
+});
+
+
 onMounted(() => {
   cartStore.getCarts();
 });
@@ -335,7 +308,7 @@ const currentStep = ref(2);
 const steps = ["購物車", "填寫資訊", "確認訂單", "完成"];
 
 // 圓點
-const circleClass = (step) => {
+const circleClass = (step: number) => {
   if (step < currentStep.value)
     return "bg-green-500 text-white border-green-500";
 
@@ -346,14 +319,14 @@ const circleClass = (step) => {
 };
 
 // 文字
-const textClass = (step) => {
+const textClass = (step: number) => {
   if (step === currentStep.value) return "text-blue-500 font-medium";
   if (step < currentStep.value) return "text-green-500";
   return "text-gray-400";
 };
 
 // 線
-const lineClass = (step) => {
+const lineClass = (step: number) => {
   if (step < currentStep.value) return "bg-green-500";
   return "bg-gray-300";
 };

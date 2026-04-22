@@ -27,27 +27,36 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-const { VITE_URL, VITE_PATH } = import.meta.env;
+const VITE_URL = import.meta.env.VITE_URL as string;
+const VITE_PATH = import.meta.env.VITE_PATH as string;
 
 export default {
   setup() {
-    const articles = ref([]);
+    interface Article {
+      id: string;
+      title: string;
+      summary: string;
+      imageUrl: string;
+    }
+
+
+    const articles = ref<Article[]>([]);
     const router = useRouter();
 
     const fetchArticles = async () => {
       try {
-        const response = await axios.get(`${VITE_URL}/api/${VITE_PATH}/articles`);
+        const response = await axios.get<{ articles: Article[] }>(`${VITE_URL}/api/${VITE_PATH}/articles`);
         articles.value = response.data.articles;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching articles:", error);
       }
     };
 
-    const goToArticle = (id) => {
+    const goToArticle = (id: string) => {
       router.push(`/article/${id}`);
     };
 
